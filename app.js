@@ -105,6 +105,7 @@ const CATEGORIES = [
     { icon:'⚡', name:'Energy Map',         url:'' },
     { icon:'🎵', name:'LawraMúsica',        url:'' },
     { icon:'🐱', name:'CoolCatzz',          url:'' },
+	{ icon:'🤦‍♂️', name:'test',          url:'' },
   ]},
 ];
 
