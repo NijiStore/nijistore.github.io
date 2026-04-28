@@ -456,11 +456,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup()
 function openDoc(catIndex, docIndex, poly) {
   const doc = CATEGORIES[catIndex].docs[docIndex];
   if (doc.url) {
+	console.log("Clicked doc ${doc.name} (with URL: ${doc.url})");
     window.open(doc.url, '_blank');
   } else {
     const orig = poly.getAttribute('fill');
     poly.setAttribute('fill','rgba(184,150,12,.45)');
     setTimeout(() => poly.setAttribute('fill', orig), 300);
+	console.log("Clicked doc ${doc.name} (with no URL: ${doc.url})");
   }
 }
 
