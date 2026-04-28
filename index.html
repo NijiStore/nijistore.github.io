@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NijiStore</title>
-  <link rel="stylesheet" href="styles.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Niji — Business Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Klee+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="hero">
-    <h1>NijiStore</h1>
-    <p>Experimental apps. Fast builds. Clean systems.</p>
-  </header>
+<div class="top-bar">
+  <div>
+    <div class="top-brand">Niji</div>
+    <div class="top-sub">Business Hub</div>
+  </div>
+  <div class="top-date" id="top-date"></div>
+</div>
 
-  <main class="apps" id="apps"></main>
+<div class="stage">
+  <div class="hex-cluster" id="cluster"></div>
+</div>
 
-  <script src="app.js"></script>
+<div class="popup-overlay" id="popup-overlay">
+  <button class="popup-close" id="popup-close">✕</button>
+  <div class="popup-cluster" id="popup-cluster"></div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
