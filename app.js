@@ -19,7 +19,7 @@ const CATEGORIES = [
     { icon:'✍️', name:'Product Story',    url:'' },
   ]},
   { icon:'🛠️', name:'Production & Ops', docs:[
-    { icon:'🔬', name:'Prototype Journal',url:'' },
+    { icon:'🔬', name:'Prototype Journal',url:'https://nijistore.github.io/prototype-journal/' },
     { icon:'📋', name:'Project Plan',     url:'' },
     { icon:'📅', name:'Release Planner',  url:'' },
     { icon:'📦', name:'Packaging Specs',  url:'' },
