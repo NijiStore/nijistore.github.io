@@ -29,7 +29,7 @@ const CATEGORIES = [
   { icon:'📦', name:'Inventory & Products', docs:[
     { icon:'🧲', name:'Material Log',     url:'' },
     { icon:'📊', name:'Inventory Tracker',url:'' },
-    { icon:'🔬', name:'Prototype Journal',url:'' },
+    { icon:'🔬', name:'Prototype Journal',url:'https://nijistore.github.io/prototype-journal/' },
     { icon:'📝', name:'Product Story',    url:'' },
     { icon:'🏷️', name:'Hang Tag Spec',    url:'' },
     { icon:'📋', name:'Collection Names', url:'' },
@@ -214,8 +214,15 @@ const mouse = { x: window.innerWidth/2, y: window.innerHeight/2, vx:0, vy:0 };
 const clusterFloat = { ox:0, oy:0, t:0 };
 const hexNodes = []; // { el, bx, by, spring, scaleSpr, baseScale, ring }
 const popupHexNodes = []; // { el, spring, scaleSpr }
+const animToggle = document.getElementById("toggle-anim");
+const ldmToggle = document.getElementById("toggle-ldm");
 let popupOpen = false;
 let animFrameId;
+
+let SETTINGS = {
+  animations: true,
+  lowDetail: true
+};
 
 // ── CLUSTER BUILD ─────────────────────────────
 function buildCluster() {
@@ -290,7 +297,11 @@ function buildCluster() {
       const ringIdx = ring.indexOf(def);
       const total   = ring.length;
       const r       = isInner ? L.innerR : L.outerR;
-      const a       = (ringIdx / total) * Math.PI * 2 - Math.PI/2;
+      let a = (ringIdx / total) * Math.PI * 2 - Math.PI/2;
+
+	  if (def.ring === 'outer') {
+	  	a += Math.PI / total; // half-step offset
+	  }
       bx = cx + Math.cos(a) * r;
       by = cy + Math.sin(a) * r;
     }
@@ -483,14 +494,46 @@ function clusterRect() {
 }
 
 // ── MAIN ANIMATION LOOP ───────────────────────
+
+function toggleAnimations(t) {
+  SETTINGS.animations = t;
+}
+
+function toggleLDM(t) {
+  SETTINGS.lowDetail = t;
+}
+
+animToggle.addEventListener("change", () => {
+  toggleAnimations(animToggle.checked)
+  console.log(animToggle.checked)
+});
+
+ldmToggle.addEventListener("change", () => {
+  toggleLDM(ldmToggle.checked);
+  console.log(ldmToggle.checked)
+});
+
 let t = 0;
 function animate() {
   animFrameId = requestAnimationFrame(animate);
+  if (!SETTINGS.animations) {
+	cancelAnimationFrame(animFrameId);
+	hexNodes.forEach(n => {
+    	n.el.style.transform = `translate(-50%,-50%) rotate(30deg)`;
+    });
+	return;
+  }
   t += 0.012;
 
-  // floating cluster
-  clusterFloat.ox = Math.sin(t * 0.7) * 4 + Math.sin(t * 1.1) * 2;
-  clusterFloat.oy = Math.cos(t * 0.5) * 3 + Math.cos(t * 0.9) * 2;
+  // floating cluster (LDM reduced)
+  if (!SETTINGS.lowDetail) {
+    clusterFloat.ox = Math.sin(t * 0.7) * 4 + Math.sin(t * 1.1) * 2;
+    clusterFloat.oy = Math.cos(t * 0.5) * 3 + Math.cos(t * 0.9) * 2;
+  } else {
+    clusterFloat.ox = Math.sin(t * 0.5) * 2;
+    clusterFloat.oy = Math.cos(t * 0.5) * 2;
+  }
+
   const cluster = document.getElementById('cluster');
   cluster.style.transform = `translate(${clusterFloat.ox}px,${clusterFloat.oy}px)`;
 
@@ -499,55 +542,73 @@ function animate() {
   // update main hexes
   hexNodes.forEach((n, i) => {
     if (n.ring === 'center') {
-      n.spring.tick(); n.scaleSpr.tick();
-      n.el.style.transform = `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s})`;
+      n.spring.tick(); 
+      n.scaleSpr.tick();
+      n.el.style.transform = `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s}) rotate(30deg)`;
       return;
     }
 
-    // absolute position of this hex on screen
     const absX = rect.left + n.bx;
     const absY = rect.top  + n.by;
     const dx = mouse.x - absX;
     const dy = mouse.y - absY;
     const dist = Math.sqrt(dx*dx + dy*dy) || 1;
 
-    // magnetic pull
-    const magRange = 160, magMax = 8;
     let mx = 0, my = 0;
-    if (dist < magRange) {
-      const force = (1 - dist / magRange) * magMax;
-      mx = (dx / dist) * force;
-      my = (dy / dist) * force;
+    let ix = 0, iy = 0;
+    let chainX = 0, chainY = 0;
+
+    if (!SETTINGS.lowDetail) {
+      // FULL MODE
+
+      const magRange = 160, magMax = 8;
+      if (dist < magRange) {
+        const force = (1 - dist / magRange) * magMax;
+        mx = (dx / dist) * force;
+        my = (dy / dist) * force;
+      }
+
+      // chain reaction (expensive)
+      hexNodes.forEach((other, j) => {
+        if (j === i || other.ring === 'center') return;
+        const ox = rect.left + other.bx, oy = rect.top + other.by;
+        const odx = mouse.x - ox, ody = mouse.y - oy;
+        const od = Math.sqrt(odx*odx + ody*ody) || 1;
+        if (od < 120) {
+          const influence = (1 - od/120) * 5;
+          const fromOther = { x: n.bx - other.bx, y: n.by - other.by };
+          const fo = Math.sqrt(fromOther.x**2 + fromOther.y**2) || 1;
+          chainX += (fromOther.x / fo) * influence;
+          chainY += (fromOther.y / fo) * influence;
+        }
+      });
+
+      // inertia
+      const inertia = 0.06;
+      ix = mouse.vx * inertia * (1 - Math.min(dist/300,1));
+      iy = mouse.vy * inertia * (1 - Math.min(dist/300,1));
+
+    } else {
+      // LOW DETAIL MODE
+
+      const magRange = 120, magMax = 4;
+      if (dist < magRange) {
+        const force = (1 - dist / magRange) * magMax;
+        mx = (dx / dist) * force;
+        my = (dy / dist) * force;
+      }
     }
 
-    // chain: nearby hexes pushed away
-    let chainX = 0, chainY = 0;
-    hexNodes.forEach((other, j) => {
-      if (j === i || other.ring === 'center') return;
-      const ox = rect.left + other.bx, oy = rect.top + other.by;
-      const odx = mouse.x - ox, ody = mouse.y - oy;
-      const od = Math.sqrt(odx*odx + ody*ody) || 1;
-      if (od < 120) {
-        const influence = (1 - od/120) * 5;
-        const fromOther = { x: n.bx - other.bx, y: n.by - other.by };
-        const fo = Math.sqrt(fromOther.x**2 + fromOther.y**2) || 1;
-        chainX += (fromOther.x / fo) * influence;
-        chainY += (fromOther.y / fo) * influence;
-      }
-    });
+    const intensity = SETTINGS.lowDetail ? 0.6 : 1;
 
-    // inertia from mouse velocity
-    const inertia = 0.06;
-    const ix = mouse.vx * inertia * (1 - Math.min(dist/300,1));
-    const iy = mouse.vy * inertia * (1 - Math.min(dist/300,1));
+    n.spring.tx = (mx + chainX + ix) * intensity;
+    n.spring.ty = (my + chainY + iy) * intensity;
 
-    n.spring.tx = mx + chainX + ix;
-    n.spring.ty = my + chainY + iy;
     n.spring.tick();
     n.scaleSpr.tick();
 
     n.el.style.transform =
-      `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s})`;
+      `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s}) rotate(30deg)`;
   });
 
   // update popup hexes
@@ -561,16 +622,25 @@ function animate() {
       const dx = mouse.x - absX;
       const dy = mouse.y - absY;
       const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-      const magRange = 100, magMax = 6;
+
+      const magRange = SETTINGS.lowDetail ? 70 : 100;
+      const magMax   = SETTINGS.lowDetail ? 3  : 6;
+
       let mx = 0, my = 0;
       if (dist < magRange) {
         const f = (1 - dist/magRange) * magMax;
-        mx = (dx/dist)*f; my = (dy/dist)*f;
+        mx = (dx/dist)*f; 
+        my = (dy/dist)*f;
       }
-      n.spring.tx = mx; n.spring.ty = my;
-      n.spring.tick(); n.scaleSpr.tick();
+
+      n.spring.tx = mx;
+      n.spring.ty = my;
+
+      n.spring.tick();
+      n.scaleSpr.tick();
+
       n.el.style.transform =
-        `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s})`;
+        `translate(-50%,-50%) translate(${n.spring.x}px,${n.spring.y}px) scale(${n.scaleSpr.s}) rotate(30deg)`;
     });
   }
 }
