@@ -1,4 +1,4 @@
-const API = 'niji-bacend.onrender.com';
+const API = 'https://niji-backend.onrender.com';
 
 async function checkAuth() {
   const res = await fetch(API + '/auth/me', {
@@ -13,10 +13,19 @@ async function checkAuth() {
   return await res.json();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  checkAuth();
-  console.log('Auth checking started.')
-})
+async function logout() {
+  await fetch('https://niji-backend.onrender.com/auth/logout', {
+    method: 'POST',
+    credentials: 'include'
+  });
+
+  window.location.href = '/login.html';
+}
+
+await checkAuth();
+
+console.log('Auth checking started.')
+
 
 // ── DATE ──────────────────────────────────────
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
