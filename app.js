@@ -1,6 +1,22 @@
-/* ═══════════════════════════════════════════════
-   NIJI BUSINESS HUB — app.js
-   ═══════════════════════════════════════════════ */
+const API = 'niji-bacend.onrender.com';
+
+async function checkAuth() {
+  const res = await fetch(API + '/auth/me', {
+    credentials: 'include'
+  });
+
+  if (!res.ok) {
+    window.location.href = '/login.html';
+    return null;
+  }
+
+  return await res.json();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  console.log('Auth checking started.')
+})
 
 // ── DATE ──────────────────────────────────────
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
