@@ -422,3 +422,33 @@ input:checked + .slider:before {
   border-color: var(--gold);
   box-shadow: 0 0 10px rgba(184,150,12,0.25);
 }
+
+.login-error {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: #ff6b6b;
+  text-align: center;
+  min-height: 12px;
+  letter-spacing: .08em;
+}
+
+.logout-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  animation: goldPulse 1s infinite;
+}
+
+.login-card {
+  animation: fadeIn .4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

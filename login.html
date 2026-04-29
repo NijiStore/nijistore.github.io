@@ -16,6 +16,7 @@
     <input id="pass" class="login-input" type="password" placeholder="password">
 
     <button class="logout-btn" onclick="login()">Enter</button>
+    <div id="errorMsg" class="login-error"></div>
 
   </div>
 </div>
@@ -23,24 +24,40 @@
 <script>
 const API = 'https://niji-backend.onrender.com';
 
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') login();
+});
+
 async function login() {
   const username = document.getElementById('user').value;
   const password = document.getElementById('pass').value;
+  const errorEl = document.getElementById('errorMsg');
 
-  const res = await fetch(API + '/auth/login', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
+  errorEl.textContent = '';
 
-  const data = await res.json();
+  const btn = document.querySelector('.logout-btn');
+  btn.classList.add('loading');
 
-  if (data.success) {
-    window.location.href = '/';
-  } else {
-    alert('Access denied');
+  try {
+    const res = await fetch(API + '/auth/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      window.location.href = '/';
+    } else {
+      errorEl.textContent = 'Invalid credentials';
+    }
+  } catch (e) {
+    errorEl.textContent = 'Network error';
   }
+
+  btn.classList.remove('loading');
 }
 </script>
 
