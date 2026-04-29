@@ -1,37 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Niji — Login</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h2>Login</h2>
 
-  <input id="user" placeholder="username">
-  <input id="pass" type="password" placeholder="password">
-  <button onclick="login()">Login</button>
+<div class="login-wrapper">
+  <div class="login-card">
 
-  <script>
-    const API = 'https://niji-backend.onrender.com';
+    <div class="login-title">Niji</div>
+    <div class="login-sub">Access Gateway</div>
 
-    async function login() {
-      const username = document.getElementById('user').value;
-      const password = document.getElementById('pass').value;
+    <input id="user" class="login-input" placeholder="username">
+    <input id="pass" class="login-input" type="password" placeholder="password">
 
-      const res = await fetch(API + '/auth/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+    <button class="logout-btn" onclick="login()">Enter</button>
 
-      const data = await res.json();
+  </div>
+</div>
 
-      if (data.success) {
-        window.location.href = '/';
-      } else {
-        alert('Login failed');
-      }
-    }
-  </script>
+<script>
+const API = 'https://niji-backend.onrender.com';
+
+async function login() {
+  const username = document.getElementById('user').value;
+  const password = document.getElementById('pass').value;
+
+  const res = await fetch(API + '/auth/login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    window.location.href = '/';
+  } else {
+    alert('Access denied');
+  }
+}
+</script>
+
 </body>
 </html>
