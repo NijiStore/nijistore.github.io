@@ -13,7 +13,8 @@ async function checkAuth() {
   return await res.json();
 }
 
-async function logout() {
+document.getElementById('logoutBtn').onclick = async () => {
+  
   await fetch('https://niji-backend.onrender.com/auth/logout', {
     method: 'POST',
     credentials: 'include'
