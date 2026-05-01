@@ -1,31 +1,19 @@
 const API = 'https://niji-backend.onrender.com';
 
-async function checkAuth() {
-  const res = await fetch(API + '/auth/me', {
-    credentials: 'include'
-  });
+window.NIJI_AUTH_API_BASE = API;
+window.NIJI_LOGIN_PATH = '/landing/login.html';
 
-  if (!res.ok) {
-    window.location.href = '/login.html';
-    return null;
-  }
+import { auth } from 'https://nijistore.github.io/niji-shared/auth.js';
 
-  return await res.json();
+await auth.requireAuth();
+
+if (!auth.can('app:landing')) {
+  auth.hideApp();
 }
 
 document.getElementById('logoutBtn').onclick = async () => {
-  
-  await fetch('https://niji-backend.onrender.com/auth/logout', {
-    method: 'POST',
-    credentials: 'include'
-  });
-
-  window.location.href = '/login.html';
-}
-
-await checkAuth();
-
-console.log('Auth checking started.')
+  await logout();
+};
 
 
 // ── DATE ──────────────────────────────────────
