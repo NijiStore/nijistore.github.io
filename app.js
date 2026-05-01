@@ -6,7 +6,6 @@ window.NIJI_LOGIN_PATH = '/landing/login.html';
 import { auth } from 'https://nijistore.github.io/niji-shared/auth.js';
 
 await auth.requireAuth();
-await auth.requirePerm('app:landing');
 
 document.getElementById('logoutBtn').onclick = async () => {
   await logout();
